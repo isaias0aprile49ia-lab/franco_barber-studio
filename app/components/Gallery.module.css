@@ -6,10 +6,20 @@
 }
 
 .item {
+  position: relative;
   border-radius: 12px;
   border: 1px solid var(--border);
   box-shadow: var(--shadow-sm);
-  font-size: 0.68rem;
+  overflow: hidden;
+}
+
+.image {
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.item:hover .image {
+  transform: scale(1.05);
 }
 
 .tall { grid-row: span 2; }
