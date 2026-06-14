@@ -1,0 +1,149 @@
+.services { background: var(--bg); }
+
+.grid {
+  display: flex;
+  gap: 1.5rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x proximity;
+  -webkit-overflow-scrolling: touch;
+  /* spazio extra in alto/basso per non tagliare zoom e ombra */
+  padding: 1.25rem 0.25rem 1.75rem;
+  margin: -1.25rem -0.25rem 0;
+  scrollbar-width: thin;
+  scrollbar-color: var(--gold-soft) transparent;
+}
+.grid::-webkit-scrollbar { height: 8px; }
+.grid::-webkit-scrollbar-track { background: transparent; }
+.grid::-webkit-scrollbar-thumb {
+  background: var(--gold-soft);
+  border-radius: 999px;
+}
+.grid::-webkit-scrollbar-thumb:hover { background: var(--gold); }
+
+.card {
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 auto;
+  width: 280px;
+  scroll-snap-align: start;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  /* rimbalzo: l'easing supera la scala finale e poi si assesta */
+  transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.4s ease, border-color 0.3s ease;
+}
+.card:hover,
+.card:focus-visible {
+  transform: translateY(-12px) scale(1.06);
+  box-shadow: var(--shadow);
+  border-color: var(--gold-soft);
+  z-index: 2;
+  outline: none;
+}
+
+/* Overlay "Prenota" che appare sopra la foto al passaggio del cursore */
+.hoverCta {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(to top, rgba(23, 19, 17, 0.55), rgba(23, 19, 17, 0.15));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: 2;
+}
+.card:hover .hoverCta,
+.card:focus-visible .hoverCta { opacity: 1; }
+
+.prenotaBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.6rem 1.3rem;
+  background: var(--gold);
+  color: #fff;
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  border-radius: 7px;
+  box-shadow: 0 10px 26px -10px rgba(0, 0, 0, 0.6);
+  transform: translateY(8px) scale(0.96);
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.card:hover .prenotaBtn,
+.card:focus-visible .prenotaBtn { transform: translateY(0) scale(1); }
+
+.photo {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  width: 100%;
+  font-size: 0.68rem;
+  overflow: hidden;
+}
+.photoImg {
+  object-fit: cover;
+  object-position: center 20%;
+  transition: transform 0.5s ease;
+}
+.card:hover .photoImg { transform: scale(1.12); }
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 1.3rem 1.4rem 1.5rem;
+  flex: 1;
+}
+
+.name {
+  font-family: var(--font-display);
+  font-size: 1.18rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.description {
+  font-size: 0.85rem;
+  color: var(--ink-mute);
+  line-height: 1.55;
+  flex: 1;
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0.4rem;
+}
+.price {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+.duration {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+  color: var(--ink-mute);
+}
+
+.bookLink {
+  margin-top: 0.5rem;
+  align-self: flex-start;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--gold);
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.25s ease;
+}
+.bookLink:hover { border-bottom-color: var(--gold); }

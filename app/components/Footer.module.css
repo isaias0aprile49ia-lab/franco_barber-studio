@@ -1,0 +1,81 @@
+.footer {
+  background: var(--footer);
+  color: var(--footer-ink);
+  padding: 4rem 0 0;
+  margin-top: 2rem;
+}
+
+.inner {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr 1fr 1.3fr;
+  gap: 2.5rem;
+  padding-bottom: 3rem;
+}
+
+/* ---- Brand ---- */
+.logo { width: auto; height: 46px; object-fit: contain; margin-bottom: 1.2rem; }
+.tagline {
+  font-size: 0.9rem;
+  color: var(--footer-mute);
+  line-height: 1.7;
+  margin-bottom: 1.4rem;
+  max-width: 320px;
+}
+.social { display: flex; gap: 0.7rem; }
+.socialLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px; height: 38px;
+  border-radius: 9px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--footer-ink);
+  transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease, transform 0.2s ease;
+}
+.socialLink:hover { background: var(--gold); color: #fff; border-color: var(--gold); transform: translateY(-2px); }
+
+/* ---- Colonne ---- */
+.colTitle {
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 1.2rem;
+}
+.list { display: flex; flex-direction: column; gap: 0.7rem; }
+.colLink {
+  font-size: 0.9rem;
+  color: var(--footer-mute);
+  transition: color 0.25s ease, padding-left 0.25s ease;
+}
+.colLink:hover { color: var(--footer-ink); padding-left: 4px; }
+
+.contactList { display: flex; flex-direction: column; gap: 0.85rem; }
+.contactRow {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.9rem;
+  color: var(--footer-mute);
+  transition: color 0.25s ease;
+}
+a.contactRow:hover { color: var(--footer-ink); }
+
+/* ---- Bottom ---- */
+.bottom {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 1.6rem;
+  padding-bottom: 1.6rem;
+  text-align: center;
+}
+.bottom p { font-size: 0.82rem; color: var(--footer-mute); }
+
+@media (max-width: 820px) {
+  .inner { grid-template-columns: 1fr 1fr; gap: 2rem; }
+}
+@media (max-width: 480px) {
+  .inner { grid-template-columns: 1fr; }
+  .tagline { max-width: none; }
+}
