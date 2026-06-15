@@ -1,14 +1,13 @@
-import Image from 'next/image';
 import Reveal from './Reveal';
 import styles from './Gallery.module.css';
 
-const SLOTS = [
-  { id: 1, src: '/gallery/lavoro-1.jpg', alt: 'Taglio fade con ciuffo', span: 'tall' },
-  { id: 2, src: '/gallery/lavoro-2.jpg', alt: 'Taglio capelli grigio platino', span: '' },
-  { id: 3, src: '/gallery/lavoro-3.jpg', alt: 'Taglio capelli con barba sfumata', span: '' },
-  { id: 4, src: '/gallery/lavoro-4.jpg', alt: 'Master class barbieri', span: '' },
-  { id: 5, src: '/gallery/lavoro-5.jpg', alt: 'Lavoro di taglio professionale', span: 'wide' },
-  { id: 6, src: '/gallery/lavoro-6.jpg', alt: 'Taglio sfumato con disegno', span: '' },
+const PHOTOS = [
+  { id: 1, src: '/gallery/lavoro-1.jpg', alt: 'Taglio fade con ciuffo grigio' },
+  { id: 2, src: '/gallery/lavoro-2.jpg', alt: 'Taglio capelli grigio platino' },
+  { id: 3, src: '/gallery/lavoro-3.jpg', alt: 'Taglio capelli con barba sfumata' },
+  { id: 4, src: '/gallery/lavoro-4.jpg', alt: 'Master class barbieri' },
+  { id: 5, src: '/gallery/lavoro-5.jpg', alt: 'Lavoro di taglio professionale' },
+  { id: 6, src: '/gallery/lavoro-6.jpg', alt: 'Taglio sfumato in azione' },
 ];
 
 export default function Gallery() {
@@ -21,20 +20,20 @@ export default function Gallery() {
           <div className="divider" />
         </Reveal>
 
-        <div className={styles.grid}>
-          {SLOTS.map((s, i) => (
+        <div className={styles.masonry}>
+          {PHOTOS.map((p, i) => (
             <Reveal
-              key={s.id}
-              delay={i * 60}
-              className={`${styles.item} ${s.span === 'tall' ? styles.tall : ''} ${s.span === 'wide' ? styles.wide : ''}`}
+              key={p.id}
+              delay={i * 120}
+              className={styles.item}
             >
-              <Image
-                src={s.src}
-                alt={s.alt}
-                fill
-                sizes="(max-width: 480px) 50vw, (max-width: 820px) 50vw, 25vw"
+              <img
+                src={p.src}
+                alt={p.alt}
+                loading="lazy"
                 className={styles.image}
               />
+              <span className={styles.overlay} aria-hidden="true" />
             </Reveal>
           ))}
         </div>
