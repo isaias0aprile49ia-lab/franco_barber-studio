@@ -5,6 +5,7 @@ import ScrollToTop from './components/ScrollToTop';
 import Account from './components/Account';
 import Shop from './components/Shop';
 import Booking from './components/Booking';
+import CapacitorInit from './components/CapacitorInit';
 
 export const metadata = {
   metadataBase: new URL('https://francobarberstudio.it'),
@@ -39,6 +40,7 @@ export default function RootLayout({ children }) {
       </head>
       <body>
         <a href="#main" className="sr-only">Salta al contenuto</a>
+        <CapacitorInit />
         <Navbar />
         <main id="main">{children}</main>
         <Footer />

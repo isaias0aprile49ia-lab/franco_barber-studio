@@ -1,0 +1,17 @@
+{
+  "appId": "com.francobarberstudio.app",
+  "appName": "Franco Barber Studio",
+  "webDir": "out",
+  "plugins": {
+    "SplashScreen": {
+      "launchAutoHide": false,
+      "backgroundColor": "#0a0a0a",
+      "showSpinner": false
+    },
+    "StatusBar": {
+      "overlaysWebView": false,
+      "style": "LIGHT",
+      "backgroundColor": "#d3d1cc"
+    }
+  }
+}
