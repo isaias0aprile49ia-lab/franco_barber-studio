@@ -113,6 +113,52 @@ export const getShopId = async () => {
   return _shopId;
 };
 
+// ============================================================
+// DATI DAL SAAS (barbieri, servizi, negozio) — letti dalla stessa base
+// così il sito pubblico riflette sempre ciò che il titolare configura nel SaaS.
+// ============================================================
+
+// Dati pubblici del negozio (nome, indirizzo, orari, telefono…)
+export const getShop = async () => {
+  const { data, error } = await supabase()
+    .from('shops')
+    .select('*')
+    .eq('slug', SHOP_SLUG)
+    .eq('active', true)
+    .maybeSingle();
+  if (error) { console.error('getShop', error); return null; }
+  if (data?.id) _shopId = data.id;
+  return data;
+};
+
+// Barbieri reali del negozio (con il loro id e colore del SaaS)
+export const getShopBarbers = async () => {
+  const shopId = await getShopId();
+  if (!shopId) return [];
+  const { data, error } = await supabase()
+    .from('barbers')
+    .select('*')
+    .eq('shop_id', shopId)
+    .eq('active', true)
+    .order('display_order', { ascending: true });
+  if (error) { console.error('getShopBarbers', error); return []; }
+  return data || [];
+};
+
+// Listino servizi reale del negozio
+export const getShopServices = async () => {
+  const shopId = await getShopId();
+  if (!shopId) return [];
+  const { data, error } = await supabase()
+    .from('services')
+    .select('*')
+    .eq('shop_id', shopId)
+    .eq('active', true)
+    .order('display_order', { ascending: true });
+  if (error) { console.error('getShopServices', error); return []; }
+  return data || [];
+};
+
 const MONTHS_IT = ['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'];
 const priceToNumber = (v) => {
   if (v == null) return null;
@@ -190,12 +236,15 @@ export const createBooking = async (booking) => {
     client_name: booking.clientName,
     client_phone: booking.clientPhone,
     client_email: booking.clientEmail,
-    service_id: null, // i servizi di Franco sono locali (slug), non FK uuid
+    // Servizi e barbieri ora vengono dal SaaS: scriviamo gli id reali così
+    // la prenotazione si collega correttamente (niente più colonne fantasma).
+    service_id: booking.serviceId || null,
     service_name: booking.serviceName,
     price: priceToNumber(booking.price),
     date_iso: when.toISOString(),
     duration_minutes: durationToMinutes(booking.duration),
-    barber_name: booking.barber,
+    barber_id: booking.barberId || null,
+    barber_name: booking.barberName ?? booking.barber ?? null,
     payment_method: booking.payment,
     extras: booking.extras || [],
     status: booking.status || 'attiva',

@@ -2,8 +2,11 @@
 import { useState, useMemo, useEffect } from 'react';
 import Image from 'next/image';
 import { Lock, Check, CreditCard, ChevronDown, ChevronLeft, ChevronRight, X, ArrowLeft, ArrowRight, MapPin, User, Phone, Mail, Users } from 'lucide-react';
-import { services, team, contact } from '../lib/data';
-import { getCurrentUser, createBooking, onAuthChange, userToAuthShape } from '../lib/store';
+import { contact } from '../lib/data';
+import { getCurrentUser, createBooking, onAuthChange, userToAuthShape, getShopServices, getShopBarbers } from '../lib/store';
+
+// Prezzo visualizzato: il SaaS salva price (numero) + eventuale price_label
+const servicePriceLabel = (s) => (s ? (s.price_label || (s.price != null ? `${s.price}€` : '')) : '');
 import styles from './Booking.module.css';
 
 const MONTHS = ['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'];
@@ -52,8 +55,10 @@ export default function Booking() {
   const [viewYear, setViewYear] = useState(today.getFullYear());
   const [viewMonth, setViewMonth] = useState(today.getMonth());
   const [selectedDate, setSelectedDate] = useState(today);
-  const [serviceId, setServiceId] = useState(services[0].id);
-  const [barber, setBarber] = useState('Qualsiasi disponibile');
+  const [services, setServices] = useState([]);
+  const [barbers, setBarbers] = useState([]);
+  const [serviceId, setServiceId] = useState(null);
+  const [barberId, setBarberId] = useState(''); // '' = Qualsiasi disponibile
   const [payment, setPayment] = useState('In Salone');
   const [confirmed, setConfirmed] = useState(false);
   const [time, setTime] = useState(null);
@@ -87,6 +92,18 @@ export default function Booking() {
       }
     });
     return () => { mounted = false; unsub(); };
+  }, []);
+
+  // Carica servizi e barbieri REALI dal SaaS (stessa base dati)
+  useEffect(() => {
+    let mounted = true;
+    getShopServices().then((s) => {
+      if (!mounted) return;
+      setServices(s);
+      setServiceId((cur) => cur || s[0]?.id || null);
+    });
+    getShopBarbers().then((b) => { if (mounted) setBarbers(b); });
+    return () => { mounted = false; };
   }, []);
 
   // Open the booking modal on link clicks / hash
@@ -144,6 +161,8 @@ export default function Booking() {
   const firstAvailable = slots.find((s) => s.available)?.time ?? null;
   const activeTime = slots.some((s) => s.available && s.time === time) ? time : firstAvailable;
   const service = services.find((s) => s.id === serviceId);
+  const barber = barbers.find((b) => b.id === barberId);
+  const barberLabel = barber ? barber.name : 'Qualsiasi disponibile';
   const stepIndex = STEPS.findIndex((s) => s.id === step);
 
   const prevMonth = () => {
@@ -181,17 +200,19 @@ export default function Booking() {
 
   const submitBooking = async (e) => {
     e.preventDefault();
-    if (!formValid || saving) return;
+    if (!formValid || saving || !service) return;
     setSaveError(''); setSaving(true);
     const { error } = await createBooking({
       clientName, clientPhone, clientEmail,
       serviceId: service.id,
       serviceName: service.name,
       price: service.price,
-      duration: service.duration,
+      duration: service.duration_minutes,
       when: selectedDate,
       time: activeTime,
-      barber, payment,
+      barberId: barber ? barber.id : null,
+      barberName: barber ? barber.name : null,
+      payment,
     });
     setSaving(false);
     if (error) { setSaveError(error.message || 'Errore nel salvataggio'); return; }
@@ -243,7 +264,7 @@ export default function Booking() {
                   onClick={() => setServiceId(s.id)}
                 >
                   <span className={styles.serviceName}>{s.name}</span>
-                  <span className={styles.servicePrice}>{s.price}</span>
+                  <span className={styles.servicePrice}>{servicePriceLabel(s)}</span>
                 </button>
               ))}
             </div>
@@ -335,8 +356,8 @@ export default function Booking() {
             <div className={styles.barberGrid}>
               <button
                 type="button"
-                className={`${styles.barberOption} ${barber === 'Qualsiasi disponibile' ? styles.barberOptionActive : ''}`}
-                onClick={() => setBarber('Qualsiasi disponibile')}
+                className={`${styles.barberOption} ${barberId === '' ? styles.barberOptionActive : ''}`}
+                onClick={() => setBarberId('')}
               >
                 <span className={styles.barberPhoto}>
                   <span className={styles.barberPhotoFallback} aria-hidden="true">
@@ -346,26 +367,20 @@ export default function Booking() {
                 <span className={styles.barberOptName}>Qualsiasi disponibile</span>
                 <span className={styles.barberOptRole}>Prima disponibilità</span>
               </button>
-              {team.map((m) => (
+              {barbers.map((m) => (
                 <button
                   key={m.id}
                   type="button"
-                  className={`${styles.barberOption} ${barber === m.name ? styles.barberOptionActive : ''}`}
-                  onClick={() => setBarber(m.name)}
+                  className={`${styles.barberOption} ${barberId === m.id ? styles.barberOptionActive : ''}`}
+                  onClick={() => setBarberId(m.id)}
                 >
-                  <span className={styles.barberPhoto}>
-                    {m.image && (
-                      <Image
-                        src={m.image}
-                        alt={m.name}
-                        fill
-                        sizes="120px"
-                        className={styles.barberPhotoImg}
-                      />
-                    )}
+                  <span className={styles.barberPhoto} style={{ background: m.color ? `${m.color}22` : undefined }}>
+                    {m.image
+                      ? <img src={m.image} alt={m.name} className={styles.barberPhotoImg} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      : <span className={styles.barberPhotoFallback} aria-hidden="true" style={{ color: m.color || undefined }}><Users size={28} /></span>}
                   </span>
                   <span className={styles.barberOptName}>{m.name}</span>
-                  <span className={styles.barberOptRole}>{m.role}</span>
+                  {m.role && <span className={styles.barberOptRole}>{m.role}</span>}
                 </button>
               ))}
             </div>
@@ -440,7 +455,7 @@ export default function Booking() {
                 <div className={styles.summaryCard}>
                   <div className={styles.detailRow}>
                     <span className={styles.detailLabel}>Servizio</span>
-                    <span className={styles.detailVal}>{service.name}</span>
+                    <span className={styles.detailVal}>{service?.name}</span>
                   </div>
                   <div className={styles.detailRow}>
                     <span className={styles.detailLabel}>Data</span>
@@ -452,7 +467,7 @@ export default function Booking() {
                   </div>
                   <div className={styles.detailRow}>
                     <span className={styles.detailLabel}>Barbiere</span>
-                    <span className={styles.detailVal}>{barber}</span>
+                    <span className={styles.detailVal}>{barberLabel}</span>
                   </div>
                   <div className={styles.detailRow}>
                     <span className={styles.detailLabel}>Pagamento</span>
@@ -460,7 +475,7 @@ export default function Booking() {
                   </div>
                   <div className={styles.detailRow}>
                     <span className={styles.detailLabel}>Prezzo</span>
-                    <span className={`${styles.detailVal} ${styles.priceHighlight}`}>{service.price}</span>
+                    <span className={`${styles.detailVal} ${styles.priceHighlight}`}>{servicePriceLabel(service)}</span>
                   </div>
                 </div>
               </aside>
@@ -476,7 +491,7 @@ export default function Booking() {
               <div className={styles.successIcon}><Check size={28} aria-hidden="true" /></div>
               <h3 id="confirm-title" className={styles.modalTitle}>Prenotazione Confermata!</h3>
               <p className={styles.modalSub}>
-                {clientName.split(' ')[0]}, il tuo appuntamento con <strong className={styles.barberHighlight}>{barber}</strong> è prenotato.
+                {clientName.split(' ')[0]}, il tuo appuntamento con <strong className={styles.barberHighlight}>{barberLabel}</strong> è prenotato.
               </p>
             </div>
 
@@ -485,10 +500,10 @@ export default function Booking() {
                 <div className={styles.receiptRow}><span>Cliente</span><strong>{clientName}</strong></div>
                 <div className={styles.receiptRow}><span>Telefono</span><strong>{clientPhone}</strong></div>
                 <div className={styles.receiptRow}><span>Email</span><strong>{clientEmail}</strong></div>
-                <div className={styles.receiptRow}><span>Servizio</span><strong>{service.name}</strong></div>
+                <div className={styles.receiptRow}><span>Servizio</span><strong>{service?.name}</strong></div>
                 <div className={styles.receiptRow}><span>Data e ora</span><strong>{selectedDate.getDate()} {MONTHS[selectedDate.getMonth()]} · {activeTime}</strong></div>
-                <div className={styles.receiptRow}><span>Barbiere</span><strong>{barber}</strong></div>
-                <div className={styles.receiptRow}><span>Prezzo</span><strong className={styles.priceHighlight}>{service.price}</strong></div>
+                <div className={styles.receiptRow}><span>Barbiere</span><strong>{barberLabel}</strong></div>
+                <div className={styles.receiptRow}><span>Prezzo</span><strong className={styles.priceHighlight}>{servicePriceLabel(service)}</strong></div>
                 <div className={styles.receiptRow}><span>Pagamento</span><strong>{payment}</strong></div>
               </div>
 
